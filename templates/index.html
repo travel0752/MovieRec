@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MovieRec — Кинотеатр с постерами</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+            background-color: #0a0a0f;
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding-bottom: 60px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* Top Navigation */
+        .top-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 40px;
+            background: rgba(10, 10, 15, 0.95);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            transition: background 0.3s, border-bottom 0.3s;
+        }
+
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #e50914;
+            letter-spacing: -0.5px;
+            cursor: pointer;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 28px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: #9ca3af;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color 0.2s;
+            cursor: pointer;
+        }
+
+        .nav-links a:hover, .nav-links a.active { color: #fff; }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: #16161f;
+            border: 1px solid #2a2a3a;
+            border-radius: 8px;
+            overflow: hidden;
+            width: 320px;
+            transition: background 0.3s, border 0.3s;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 10px 14px;
+            font-size: 0.85rem;
+            background: transparent;
+            border: none;
+            color: #fff;
+            outline: none;
+        }
+
+        .search-box input::placeholder { color: #6b7280; }
+
+        .search-box button {
+            padding: 10px 16px;
+            background: #e50914;
+            color: white;
+            border: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .search-box button:hover { background: #c40812; }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #e50914;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            padding: 0 40px;
+            margin-bottom: 40px;
+        }
+
+        .hero-banner {
+            position: relative;
+            width: 100%;
+            height: 380px;
+            border-radius: 16px;
+            overflow: hidden;
+            background: linear-gradient(135deg, #1a1a2e 0%, #0f0f1a 100%);
+            display: flex;
+            align-items: flex-end;
+            transition: background 0.3s;
+        }
+
+        .hero-banner::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(to top, rgba(10,10,15,0.95) 0%, rgba(10,10,15,0.4) 50%, transparent 100%);
+            z-index: 1;
+            transition: background 0.3s;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            padding: 40px;
+            max-width: 600px;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: rgba(229, 9, 20, 0.2);
+            color: #e50914;
+            font-size: 0.75rem;
+            font-weight: 700;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .hero-title {
+            font-size: 2.8rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+            line-height: 1.1;
+            letter-spacing: -1px;
+        }
+
+        .hero-desc {
+            font-size: 1rem;
+            color: #9ca3af;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-primary {
+            padding: 12px 28px;
+            background: #e50914;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #c40812;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            padding: 12px 28px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary:hover { background: rgba(255,255,255,0.15); }
+
+        /* Content Rows */
+        .content-section {
+            padding: 0 40px;
+            margin-bottom: 48px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -0.3px;
+        }
+
+        .section-nav {
+            display: flex;
+            gap: 8px;
+        }
+
+        .section-nav button {
+            width: 32px;
+            height: 32px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px;
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .section-nav button:hover {
+            background: #e50914;
+            border-color: #e50914;
+            color: white;
+        }
+
+        /* Horizontal Scroll */
+        .media-track {
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            padding-bottom: 8px;
+            scrollbar-width: none;
+        }
+
+        .media-track::-webkit-scrollbar { display: none; }
+
+        /* Media Card */
+        .media-card {
+            min-width: 200px;
+            max-width: 200px;
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .media-card:hover { transform: translateY(-6px); }
+
+        .media-poster {
+            width: 100%;
+            height: 280px;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            background: #1a1a26;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        }
+
+        .media-poster img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+
+        .media-card:hover .media-poster img { transform: scale(1.06); }
+
+        .media-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 60%);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 14px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .media-card:hover .media-overlay { opacity: 1; }
+
+        .overlay-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .overlay-meta {
+            font-size: 0.75rem;
+            color: #9ca3af;
+        }
+
+        /* Card Info Below */
+        .media-info {
+            padding: 10px 2px 0 2px;
+        }
+
+        .media-info h3 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .media-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+
+        .media-meta .year { color: #9ca3af; }
+        .media-meta .genre { color: #6b7280; }
+
+        .stars {
+            display: flex;
+            gap: 2px;
+            color: #fbbf24;
+            font-size: 0.7rem;
+        }
+
+        .status-text {
+            color: #4b5563;
+            font-size: 0.9rem;
+            padding: 40px 0;
+        }
+
+        /* View containers */
+        .view { display: none; }
+        .view.active { display: block; }
+
+        /* Refresh button */
+        .section-nav button[title="Обновить"] {
+            background: rgba(229, 9, 20, 0.15);
+            border-color: rgba(229, 9, 20, 0.3);
+            color: #e50914;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .section-nav button[title="Обновить"]:hover {
+            background: #e50914;
+            border-color: #e50914;
+            color: white;
+            transform: rotate(180deg);
+        }
+
+        /* СТИЛИ ДЛЯ СВЕТЛОЙ ТЕМЫ */
+        body.light-theme {
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+
+        body.light-theme .top-nav {
+            background: rgba(255, 255, 255, 0.95);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        body.light-theme .nav-links a {
+            color: #4b5563;
+        }
+
+        body.light-theme .nav-links a:hover, body.light-theme .nav-links a.active {
+            color: #000000;
+        }
+
+        body.light-theme .search-box {
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+        }
+
+        body.light-theme .search-box input {
+            color: #1f2937;
+        }
+
+        body.light-theme .hero-banner {
+            background: linear-gradient(135deg, #e5e7eb 0%, #f3f4f6 100%);
+        }
+
+        body.light-theme .hero-banner::before {
+            background: linear-gradient(to top, rgba(243, 244, 246, 0.95) 0%, rgba(243, 244, 246, 0.4) 50%, transparent 100%);
+        }
+
+        body.light-theme .hero-title {
+            color: #111827;
+        }
+
+        body.light-theme .hero-desc {
+            color: #4b5563;
+        }
+
+        body.light-theme .btn-secondary {
+            background: rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            color: #1f2937;
+        }
+
+        body.light-theme .btn-secondary:hover {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        body.light-theme .section-title {
+            color: #111827;
+        }
+
+        body.light-theme .media-info h3 {
+            color: #111827;
+        }
+
+        body.light-theme .status-text {
+            color: #6b7280;
+        }
+
+        body.light-theme .section-nav button {
+            background: rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            color: #1f2937;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .top-nav { padding: 12px 20px; }
+            .nav-links { display: none; }
+            .search-box { width: 200px; }
+            .hero-banner { height: 280px; }
+            .hero-title { font-size: 1.8rem; }
+            .content-section, .hero-section { padding: 0 20px; }
+        }
+    </style>
+<base target="_blank">
+</head>
+<body>
+
+    <nav class="top-nav">
+        <div class="logo" onclick="showView('home')">MovieRec</div>
+        <ul class="nav-links">
+            <li><a id="navMovies" onclick="showView('movies')">Фильмы</a></li>
+        </ul>
+        <div class="nav-right">
+            <button id="themeToggle" onclick="toggleTheme()" style="background: transparent; border: none; color: #9ca3af; font-size: 1.2rem; cursor: pointer; margin-right: 4px; transition: color 0.2s;">🌓</button>
+
+            <div class="search-box">
+                <input type="text" id="queryInput" placeholder="Что хотите посмотреть?">
+                <button onclick="searchMovies()">Найти</button>
+            </div>
+            <div class="avatar">U</div>
+        </div>
+    </nav>
+
+    <div id="viewHome" class="view active">
+        <section class="hero-section">
+            <div class="hero-banner">
+                <div class="hero-content">
+                    <span class="hero-badge">Популярное сейчас</span>
+                    <h1 class="hero-title">Откройте мир кино</h1>
+                    <p class="hero-desc">Ищите фильмы по любым темам — от вампиров до космических приключений. Персональные рекомендации для каждого.</p>
+                    <div class="hero-buttons">
+                        <button class="btn-primary" onclick="openSearch()">Начать поиск</button>
+                        <button class="btn-secondary" onclick="loadRandomMovies()">Случайная подборка</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="section-header">
+                <h2 class="section-title">Результаты поиска</h2>
+                <div class="section-nav">
+                    <button onclick="scrollRow('searchTrack', -1)">←</button>
+                    <button onclick="scrollRow('searchTrack', 1)">→</button>
+                </div>
+            </div>
+            <div class="media-track" id="searchTrack">
+                <div class="status-text">Введите поисковый запрос...</div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="section-header">
+                <h2 class="section-title">Случайные рекомендации</h2>
+                <div class="section-nav">
+                    <button onclick="scrollRow('randomTrack', -1)">←</button>
+                    <button onclick="scrollRow('randomTrack', 1)">→</button>
+                </div>
+            </div>
+            <div class="media-track" id="randomTrack">
+                <div class="status-text">Загрузка подборки...</div>
+            </div>
+        </section>
+    </div>
+
+    <div id="viewMovies" class="view">
+        <section class="content-section" style="margin-top: 30px;">
+            <div class="section-header">
+                <h2 class="section-title">Триллеры</h2>
+                <div class="section-nav">
+                    <button onclick="scrollRow('trackThriller', -1)">←</button>
+                    <button onclick="scrollRow('trackThriller', 1)">→</button>
+                    <button onclick="refreshCategory('trackThriller', 'триллер')" title="Обновить">↻</button>
+                </div>
+            </div>
+            <div class="media-track" id="trackThriller">
+                <div class="status-text">Загрузка...</div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="section-header">
+                <h2 class="section-title">Драмы</h2>
+                <div class="section-nav">
+                    <button onclick="scrollRow('trackDrama', -1)">←</button>
+                    <button onclick="scrollRow('trackDrama', 1)">→</button>
+                    <button onclick="refreshCategory('trackDrama', 'драма')" title="Обновить">↻</button>
+                </div>
+            </div>
+            <div class="media-track" id="trackDrama">
+                <div class="status-text">Загрузка...</div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="section-header">
+                <h2 class="section-title">Хорроры</h2>
+                <div class="section-nav">
+                    <button onclick="scrollRow('trackHorror', -1)">←</button>
+                    <button onclick="scrollRow('trackHorror', 1)">→</button>
+                    <button onclick="refreshCategory('trackHorror', 'хоррор')" title="Обновить">↻</button>
+                </div>
+            </div>
+            <div class="media-track" id="trackHorror">
+                <div class="status-text">Загрузка...</div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="section-header">
+                <h2 class="section-title">Комедии</h2>
+                <div class="section-nav">
+                    <button onclick="scrollRow('trackComedy', -1)">←</button>
+                    <button onclick="scrollRow('trackComedy', 1)">→</button>
+                    <button onclick="refreshCategory('trackComedy', 'комедия')" title="Обновить">↻</button>
+                </div>
+            </div>
+            <div class="media-track" id="trackComedy">
+                <div class="status-text">Загрузка...</div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="section-header">
+                <h2 class="section-title">Фантастика</h2>
+                <div class="section-nav">
+                    <button onclick="scrollRow('trackSciFi', -1)">←</button>
+                    <button onclick="scrollRow('trackSciFi', 1)">→</button>
+                    <button onclick="refreshCategory('trackSciFi', 'фантастика')" title="Обновить">↻</button>
+                </div>
+            </div>
+            <div class="media-track" id="trackSciFi">
+                <div class="status-text">Загрузка...</div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="section-header">
+                <h2 class="section-title">Боевики</h2>
+                <div class="section-nav">
+                    <button onclick="scrollRow('trackAction', -1)">←</button>
+                    <button onclick="scrollRow('trackAction', 1)">→</button>
+                    <button onclick="refreshCategory('trackAction', 'боевик')" title="Обновить">↻</button>
+                </div>
+            </div>
+            <div class="media-track" id="trackAction">
+                <div class="status-text">Загрузка...</div>
+            </div>
+        </section>
+    </div>
+
+<script>
+var _randomLoaded = false;
+var _categoriesLoaded = false;
+
+// Проверка сохранённой темы и загрузка контента при старте
+document.addEventListener("DOMContentLoaded", function() {
+    var savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'light') {
+        document.body.classList.add('light-theme');
+    }
+
+    if (!_randomLoaded) {
+        loadRandomMovies();
+        _randomLoaded = true;
+    }
+});
+
+// Функция переключения темы
+function toggleTheme() {
+    var body = document.body;
+    body.classList.toggle('light-theme');
+
+    if (body.classList.contains('light-theme')) {
+        localStorage.setItem('theme', 'light');
+    } else {
+        localStorage.setItem('theme', 'dark');
+    }
+}
+
+function showView(viewName) {
+    var views = document.querySelectorAll('.view');
+    for (var i = 0; i < views.length; i++) {
+        views[i].classList.remove('active');
+    }
+    var viewId = 'view' + viewName.charAt(0).toUpperCase() + viewName.slice(1);
+    document.getElementById(viewId).classList.add('active');
+
+    if (viewName === 'movies' && !_categoriesLoaded) {
+        loadCategory('trackThriller', 'триллер');
+        loadCategory('trackDrama', 'драма');
+        loadCategory('trackHorror', 'хоррор');
+        loadCategory('trackComedy', 'комедия');
+        loadCategory('trackSciFi', 'фантастика');
+        loadCategory('trackAction', 'боевик');
+        _categoriesLoaded = true;
+    }
+}
+
+function openSearch() {
+    showView('home');
+    var input = document.getElementById('queryInput');
+    input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setTimeout(function() {
+        input.focus();
+        input.style.borderColor = '#e50914';
+        setTimeout(function() { input.style.borderColor = '#2a2a3a'; }, 1500);
+    }, 400);
+}
+
+function scrollRow(trackId, direction) {
+    var track = document.getElementById(trackId);
+    if (track) track.scrollBy({ left: direction * 460, behavior: 'smooth' });
+}
+
+function searchMovies() {
+    var query = document.getElementById('queryInput').value;
+    if (!query.trim()) return;
+    showView('home');
+    var track = document.getElementById('searchTrack');
+    track.innerHTML = '<div class="status-text">Ищем лучшие совпадения...</div>';
+
+    fetch('/api/recommend', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: query })
+    })
+    .then(function(response) { return response.json(); })
+    .then(function(movies) {
+        renderTrack(track, movies, query);
+    })
+    .catch(function(e) {
+        track.innerHTML = '<div class="status-text">Ошибка поиска.</div>';
+    });
+}
+
+function loadRandomMovies() {
+    var track = document.getElementById('randomTrack');
+    fetch('/api/random')
+    .then(function(response) { return response.json(); })
+    .then(function(movies) {
+        renderTrack(track, movies, "movie,cinema");
+    })
+    .catch(function(e) {
+        track.innerHTML = '<div class="status-text">Не удалось загрузить подборку.</div>';
+    });
+}
+
+function loadCategory(trackId, categoryQuery) {
+    var track = document.getElementById(trackId);
+    track.innerHTML = '<div class="status-text">Загрузка...</div>';
+    fetch('/api/recommend', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: categoryQuery })
+    })
+    .then(function(response) { return response.json(); })
+    .then(function(movies) {
+        renderTrack(track, movies, categoryQuery);
+    })
+    .catch(function(e) {
+        track.innerHTML = '<div class="status-text">Не удалось загрузить.</div>';
+    });
+}
+
+function refreshCategory(trackId, categoryQuery) {
+    var track = document.getElementById(trackId);
+    track.innerHTML = '<div class="status-text">Обновление...</div>';
+    fetch('/api/recommend', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: categoryQuery, random: true })
+    })
+    .then(function(response) { return response.json(); })
+    .then(function(movies) {
+        renderTrack(track, movies, categoryQuery);
+    })
+    .catch(function(e) {
+        track.innerHTML = '<div class="status-text">Ошибка обновления.</div>';
+    });
+}
+
+function renderTrack(track, movies, keyword) {
+    track.innerHTML = '';
+    if (!movies || movies.length === 0) {
+        track.innerHTML = '<div class="status-text">Ничего не найдено.</div>';
+        return;
+    }
+
+    for (var i = 0; i < movies.length; i++) {
+        var movie = movies[i];
+        var card = document.createElement('div');
+        card.className = 'media-card';
+
+        var imageUrl = movie.poster || movie.poster_url || 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=400&h=560&q=80';
+
+        var yearMatch = movie.description ? movie.description.match(/\b(19|20)\d{2}\b/) : null;
+        var year = yearMatch ? yearMatch[0] : '2026';
+        var stars = '★★★★☆';
+        var desc = movie.description || '';
+
+        card.innerHTML = '<div class="media-poster">' +
+            '<img src="' + imageUrl + '" alt="' + movie.title + '" loading="lazy" onerror="this.src=\'https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=400&h=560&q=80\'">' +
+            '<div class="media-overlay">' +
+                '<div class="overlay-title">' + movie.title + '</div>' +
+                '<div class="overlay-meta">' + year + ' &bull; ' + desc.substring(0, 40) + '...</div>' +
+            '</div>' +
+        '</div>' +
+        '<div class="media-info">' +
+            '<h3>' + movie.title + '</h3>' +
+            '<div class="media-meta">' +
+                '<span class="year">' + year + '</span>' +
+                '<span class="genre">' + (keyword || 'Movie') + '</span>' +
+                '<span class="stars">' + stars + '</span>' +
+            '</div>' +
+        '</div>';
+        track.appendChild(card);
+    }
+}
+</script>
+</body>
+</html>
